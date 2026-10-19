@@ -2,7 +2,7 @@
 # Code_Pcvm_test
 
 ## Overview
-[Asymptotic Distribution-Free Tests for Ultra-high Dimensional Parametric Regressions via Projected Empirical Processes and p-value Combination](https://arxiv.org/abs/2601.00541v1)
+[Asymptotic Distribution-Free Tests for Ultra-high Dimensional Parametric Regressions via Projected Empirical Processes and p-value Combination](https://arxiv.org/abs/2601.00541v1).
 This repository contains the R source code to reproduce the Monte Carlo simulations and real data analyses presented in the manuscript and its Supplementary Material. This paper constructs a Cramer-von Mises type test based on a martingale-transformed, projected residual-marked empirical process, which renders the test asymptotically distribution-free. Furthermore, it proposes a novel hybrid test that aggregates empirical process-based and local smoothing tests using Cauchy combination, which is powerful against both low-frequency and high-frequency alternatives.
 
 ## Overview of R Scripts and Correspondence to Manuscript Tables
