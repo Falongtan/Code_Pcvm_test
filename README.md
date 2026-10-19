@@ -16,4 +16,4 @@ This repository contains the R source code to reproduce the Monte Carlo simulati
 | `Pcvm_Pls_hybrid_linear_H11_t0.R` | Integration limit ($t_0$) sensitivity analysis (0.99, 0.95, and 0.90 quantiles) for linear models under $H_{11}$. | [Table S13-S15] |
 | `Pcvm_Pls_hybrid_logit_H21_t0.R` | Integration limit ($t_0$) sensitivity analysis (0.99, 0.95, and 0.90 quantiles) for logistic models under $H_{21}$. | [Table S16-S18] |
 | `Pcvm_Pls_hybrid_logit_H21_alpha.R` | Collinearity diagnosis between estimated $\hat{\beta}$ and residual-based SDR projections ($\hat{\alpha}$) before orthogonalization. | [ ] |
-| `real_data_analysis.R` | Real data applications on the Communities and Crime dataset (linear) and OHSU AML dataset (logistic). | [Figure 1, Figure 2] |
+| `real_data_analysis.R` | Real data applications on the Communities and Crime dataset (linear) and OHSU AML dataset (logistic). The corresponding datasets are provided in the `communities+and+crime/` and `aml_ohsu_2022/` directories, respectively. | [Figure 1, Figure 2] |
