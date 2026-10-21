@@ -35,15 +35,10 @@ Pcvm_Pls_hybrid_logit <- function(p,n,a,pho){
   hybrid_power <- foreach(k = 1:s, .combine='rbind',
                           .packages = c('MASS','harmonicmeanp', 'glmnet','LassoSIR','VariableScreening','psych'),
                           .export = c("pvalue_integ_Brown",'bandwidth_choice')) %dopar%
-    {
-      
-      # result <- tryCatch({
-      # source("pvalue_integ_Brown.R")
-      # source("bandwidth_choice.R")
+    { 
       x <- mvrnorm(n, mu, sigma)
       # z <- x %*% beta0 + a*0.2*(x %*% beta0)^2                                                # H21
-      z <- x %*% beta0 + a * (x[,1]*x[,2] + x[,2]*x[,3] + x[,3]*x[,4] + x[,4]*x[,5])        # H22
-      # z <- x %*% beta0 + a * 2 * cos(0.6 * x %*% beta0 * pi)                                # H23
+      z <- x %*% beta0 + a * (x[,1]*x[,2] + x[,2]*x[,3] + x[,3]*x[,4] + x[,4]*x[,5])            # H22 
 
       pr <- 1/(1 + exp(-z))
       y <- matrix(rbinom(n, 1, pr),ncol = 1)
@@ -548,11 +543,9 @@ grp_logit_parallel<- function(p,n,a,pho){
                        # .packages = c('MASS','matrixcalc','RPtests','GRPtests','foreach','parallel','iterators','doParallel','tictoc'),
                        .packages = c('MASS','matrixcalc','RPtests','GRPtests')) %dopar%
     {
-      
       x <- mvrnorm(n, mu, sigma)
       # z <- x %*% beta0 + a*0.2*(x %*% beta0)^2                                             # H21
-      z <- x %*% beta0 + a * (x[,1]*x[,2] + x[,2]*x[,3] + x[,3]*x[,4] + x[,4]*x[,5])   # H22
-      #      z <- x %*% beta0 + a * 2 * cos(0.6 * x %*% beta0 * pi)                                # H23
+      z <- x %*% beta0 + a * (x[,1]*x[,2] + x[,2]*x[,3] + x[,3]*x[,4] + x[,4]*x[,5])         # H22 
       pr <- 1/(1 + exp(-z))
       y <- matrix(rbinom(n, 1, pr),ncol = 1)
       pval_grp <- GRPtest(x, y, fam = "binomial", nsplits = 1,RP_function = NULL,output_all=FALSE,penalize=TRUE)
@@ -581,11 +574,10 @@ if(T){
   pho <- c(0,.4,.8)
   r <- 8
   compar_lm_result <- matrix(0, nrow = r * length(pho) * length(n) * length(a), ncol = length(p) + 4)
-  for (jj in 1:length(p)){
   for (kk in 1:length(pho)){
     for (ll in 1:length(n)){
       for (ii in 1:length(a)){
-        # for (jj in 1:length(p)){
+        for (jj in 1:length(p)){
           t3 <- Sys.time() 
           result_pls <- Pcvm_Pls_hybrid_logit(p[jj], n[ll], a[ii], pho[kk]) 
           result_grp_rp <- grp_logit_parallel(p[jj], n[ll], a[ii], pho[kk])

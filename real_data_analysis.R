@@ -330,11 +330,7 @@ Pcvm_Pls_hybrid_linear_test <- function(x,y){
     pval_cauchy1_PLS <- 1- pcauchy(mean(tan((0.5-pval_matrix1_PLS[1:pro2_pls_num])*pi)))  # cauchy combination based on x1 y1
     pval_cauchy2_PLS <- 1- pcauchy(mean(tan((0.5-pval_matrix2_PLS[1:pro1_pls_num])*pi)))  # cauchy combination based on x1 y1
     pval_cauchy_PLS  <- 1- pcauchy(mean(tan((0.5-pval_matrix_PLS[1:pval_pls_num])*pi)))   # cauchy combination based on x y
-    
-    pval_min1_PLS <- 1 - (1 - min(pval_matrix1_PLS))^pro2_pls_num
-    pval_min2_PLS <- 1 - (1 - min(pval_matrix2_PLS))^pro1_pls_num
-    pval_min_m <- cbind(pval_min1_PLS, pval_min2_PLS) 
-    pval_min_cauchy_PLS <- 1- pcauchy(mean(tan((0.5-pval_min_m)*pi))) 
+ 
   }
   
   # pval_cauchy_hybrid 
@@ -391,10 +387,7 @@ Pcvm_Pls_hybrid_linear_test <- function(x,y){
                  pval_cauchy_Pcvm = pval_cauchy_Pcvm,
                  pval_cauchy1_PLS = pval_cauchy1_PLS, 
                  pval_cauchy2_PLS = pval_cauchy2_PLS, 
-                 pval_cauchy_PLS = pval_cauchy_PLS,
-                 pval_min1_PLS = pval_min1_PLS, 
-                 pval_min2_PLS = pval_min2_PLS, 
-                 pval_min_cauchy_PLS = pval_min_cauchy_PLS,
+                 pval_cauchy_PLS = pval_cauchy_PLS, 
                  pval_fisher1_PLS = pval_fisher1_PLS, 
                  pval_fisher2_PLS = pval_fisher2_PLS, 
                  pval_fisher_cauchy_PLS = pval_fisher_cauchy_PLS,
@@ -815,12 +808,7 @@ Pcvm_Pls_hybrid_logit_test <- function(x,y){
     
     pval_cauchy1_PLS <- 1- pcauchy(mean(tan((0.5-pval_matrix1_PLS[1:pro2_pls_num])*pi)))             
     pval_cauchy2_PLS <- 1- pcauchy(mean(tan((0.5-pval_matrix2_PLS[1:pro1_pls_num])*pi)))             
-    pval_cauchy_PLS  <- 1- pcauchy(mean(tan((0.5-pval_matrix_PLS[1:pval_pls_num])*pi)))              
-    
-    pval_min1_PLS <- 1 - (1 - min(pval_matrix1_PLS))^pro2_pls_num
-    pval_min2_PLS <- 1 - (1 - min(pval_matrix2_PLS))^pro1_pls_num
-    pval_min_m <- cbind(pval_min1_PLS, pval_min2_PLS) 
-    pval_min_cauchy_PLS <- 1- pcauchy(mean(tan((0.5-pval_min_m)*pi)))  
+    pval_cauchy_PLS  <- 1- pcauchy(mean(tan((0.5-pval_matrix_PLS[1:pval_pls_num])*pi)))        
   }
   
   # pval_cauchy_hybrid
@@ -879,10 +867,7 @@ Pcvm_Pls_hybrid_logit_test <- function(x,y){
                  pval_cauchy_PCvm = pval_cauchy_PCvm,
                  pval_cauchy1_PLS = pval_cauchy1_PLS,
                  pval_cauchy2_PLS = pval_cauchy2_PLS,
-                 pval_cauchy_PLS = pval_cauchy_PLS,
-                 pval_min1_PLS = pval_min1_PLS,
-                 pval_min2_PLS = pval_min2_PLS,
-                 pval_min_cauchy_PLS = pval_min_cauchy_PLS,
+                 pval_cauchy_PLS = pval_cauchy_PLS, 
                  pval_fisher1_PLS = pval_fisher1_PLS_std,
                  pval_fisher2_PLS = pval_fisher2_PLS_std,
                  pval_fisher_cauchy_PLS = pval_fisher_cauchy_std,

@@ -195,7 +195,6 @@ if(T){
                                  .packages = c('MASS','glmnet','LassoSIR','VariableScreening','psych'),
                                  .export = c("pvalue_integ_Brown")) %dopar% 
       {
-        
         x <- mvrnorm(n, mu, sigma)
         y <-  x %*% beta0 + a * 0.1*(x %*% beta0)^2 + rnorm(n)                    
         
@@ -423,7 +422,6 @@ if(T){
                                    .packages = c('MASS','glmnet','LassoSIR','VariableScreening','psych'),
                                    .export = c("pvalue_integ_Brown")) %dopar% 
       {
-        
         x <- mvrnorm(n, mu, sigma)
         y <-  x %*% beta0 + a * 0.1*(x %*% beta0)^2 + rnorm(n)                    
         
@@ -701,7 +699,6 @@ if(T){
     PLS_power <- foreach(k = 1:s, .combine='rbind', .errorhandling = "remove",
                          .packages = c('MASS','glmnet','LassoSIR','VariableScreening','psych')) %dopar%  
       {
-          
           # result <- tryCatch({ 
           x <- mvrnorm(n, mu, sigma) 
           y <- x %*% beta0 + a * 0.1*(x %*% beta0)^2 + rnorm(n)  
@@ -906,7 +903,6 @@ if(T){
     rp_grp_power <- foreach(k = 1:s, .combine='rbind', .errorhandling = "remove",
                             .packages = c('MASS','matrixcalc','RPtests','GRPtests')) %dopar%  
       {
-        
         x <- mvrnorm(n, mu, sigma)
         y <- x %*% beta0 + a * 0.1*(x %*% beta0)^2 + rnorm(n)
         if (target_method == "RP") {
@@ -949,7 +945,6 @@ if(T){
                        .packages = c('MASS', 'glmnet','LassoSIR','VariableScreening'),
                        .export = c("pvalue_integ_Brown", "bandwidth_choice")) %dopar%
       {
-        
         x <- mvrnorm(n, mu, sigma)
         z <- x %*% beta0 + a*0.2*(x %*% beta0)^2                                        
         pr <- 1/(1 + exp(-z))
@@ -1156,7 +1151,6 @@ if(T){
                           .packages = c('MASS','harmonicmeanp', 'glmnet','LassoSIR','VariableScreening','psych'),
                           .export = c("pvalue_integ_Brown",'bandwidth_choice')) %dopar%
       {
-        
         x <- mvrnorm(n, mu, sigma)
         z <- x %*% beta0 + a*0.2*(x %*% beta0)^2                                              
         pr <- 1/(1 + exp(-z))
@@ -1412,7 +1406,6 @@ if(T){
                             .packages = c('MASS','harmonicmeanp', 'glmnet','LassoSIR','VariableScreening','psych'),
                             .export = c("pvalue_integ_Brown",'bandwidth_choice')) %dopar%
       {
-        
         x <- mvrnorm(n, mu, sigma)
         z <- x %*% beta0 + a*0.2*(x %*% beta0)^2                                              
         pr <- 1/(1 + exp(-z))
@@ -1726,7 +1719,6 @@ if(T){
     PLS_power <- foreach(k = 1:s, .combine='rbind', .errorhandling = "remove",
                          .packages = c('MASS','glmnet','LassoSIR','VariableScreening','psych')) %dopar%  
       {
-        
         x <- mvrnorm(n, mu, sigma)
         z <- x %*% beta0 + a*0.2*(x %*% beta0)^2                                               
         pr <- 1/(1 + exp(-z)) 
@@ -1902,7 +1894,6 @@ if(T){
     grp_power <- foreach(k = 1:s, .combine='rbind', .errorhandling = "remove",
                          .packages = c('MASS','matrixcalc','GRPtests')) %dopar%
       {
-        
         x <- mvrnorm(n, mu, sigma)
         z <- x %*% beta0 + a*0.2*(x %*% beta0)^2                                              
         pr <- 1/(1 + exp(-z))
@@ -1934,8 +1925,7 @@ for (kk in seq_along(pho_vec)) {
       
       curr_p <- p_vec[jj]
       curr_a <- a_vec[ii]
-      curr_pho <- pho_vec[kk] 
-      curr_seed <- 12345 + jj
+      curr_pho <- pho_vec[kk]  
       
       cat(sprintf("\n>>> Parameter combination: p = %d, a = %.1f, pho = %.1f <<<\n", curr_p, curr_a, curr_pho))
       
@@ -1943,8 +1933,6 @@ for (kk in seq_along(pho_vec)) {
       
       cat("[Linear] Running PCvM1 (Only) ... ")
       t0 <- Sys.time()
-      set.seed(curr_seed)
-      # res_lin_pcvm1 <- tryCatch(PCvM1_linear_only(curr_p, n, curr_a, curr_pho), error=function(e) NA)
       res_lin_pcvm1 <- PCvM1_linear_only(curr_p, n_1, curr_a, curr_pho)
       t_lin_pcvm1 <- as.numeric(difftime(Sys.time(), t0, units="secs"))
       pow_lin_pcvm1 <- if(is.list(res_lin_pcvm1)) res_lin_pcvm1$martingale_cauchy1_power else NA
@@ -1952,8 +1940,6 @@ for (kk in seq_along(pho_vec)) {
       
       cat("[Linear] Running PCvM (Full) ... ")
       t0 <- Sys.time()
-      set.seed(curr_seed)
-      # res_lin_pcvm <- tryCatch(Pcvm_linear_run(curr_p, n, curr_a, curr_pho), error=function(e) NA)
       res_lin_pcvm <- Pcvm_linear_run(curr_p, n_1, curr_a, curr_pho)
       t_lin_pcvm <- as.numeric(difftime(Sys.time(), t0, units="secs"))
       pow_lin_pcvm <- if(is.list(res_lin_pcvm[1])) res_lin_pcvm$martingale_cauchy_power else NA
@@ -1962,8 +1948,6 @@ for (kk in seq_along(pho_vec)) {
       # # --- Hybrid ---
       cat("[Linear] Running Hybrid ... ")
       t0 <- Sys.time()
-      set.seed(curr_seed)
-      # res_lin_hyb <- tryCatch(Hybrid_linear_run(curr_p, n, curr_a, curr_pho), error=function(e) NA)
       res_lin_hyb <- Hybrid_linear_run(curr_p, n_1, curr_a, curr_pho)
       t_lin_hyb <- as.numeric(difftime(Sys.time(), t0, units="secs"))
       pow_lin_hyb <- if(is.list(res_lin_hyb[1])) res_lin_hyb$hybrid_cauchy_power else NA
@@ -1971,8 +1955,6 @@ for (kk in seq_along(pho_vec)) {
 
       cat("[Linear] Running CPB(PLS) ... ")
       t0 <- Sys.time()
-      set.seed(curr_seed)
-      # res_lin_pls <- tryCatch(PLS_lm_parallel_run(curr_p, n, curr_a, curr_pho), error=function(e) NA)
       res_lin_pls <- PLS_lm_parallel_run(curr_p, n_1, curr_a, curr_pho)
       t_lin_pls <- as.numeric(difftime(Sys.time(), t0, units="secs"))
       pow_lin_pls <- if(is.list(res_lin_pls[1])) res_lin_pls$PLS_fisher_power else NA
@@ -1980,8 +1962,6 @@ for (kk in seq_along(pho_vec)) {
 
       cat("[Linear] Running RPtest ... ")
       t0 <- Sys.time()
-      set.seed(curr_seed)
-      # res_lin_rp <- tryCatch(grp_rp_lm_parallel_run(curr_p, n, curr_a, curr_pho, target_method="RP"), error=function(e) NA)
       res_lin_rp <- grp_rp_lm_parallel_run(curr_p, n_1, curr_a, curr_pho, target_method="RP")
       t_lin_rp <- as.numeric(difftime(Sys.time(), t0, units="secs"))
       pow_lin_rp <- if(is.list(res_lin_rp[1])) res_lin_rp$Power else NA
@@ -1989,8 +1969,6 @@ for (kk in seq_along(pho_vec)) {
 
       cat("[Linear] Running GRPtest ... ")
       t0 <- Sys.time()
-      set.seed(curr_seed)
-      # res_lin_grp <- tryCatch(grp_rp_lm_parallel_run(curr_p, n, curr_a, curr_pho, target_method="GRP"), error=function(e) NA)
       res_lin_grp <- grp_rp_lm_parallel_run(curr_p, n_1, curr_a, curr_pho, target_method="GRP")
       t_lin_grp <- as.numeric(difftime(Sys.time(), t0, units="secs"))
       pow_lin_grp <- if(is.list(res_lin_grp[1])) res_lin_grp$Power else NA
@@ -2000,8 +1978,6 @@ for (kk in seq_along(pho_vec)) {
 
       cat("[Logit] Running PCvM1 (Only) ... ")
       t0 <- Sys.time()
-      set.seed(curr_seed)
-      # res_log_pcvm1 <- tryCatch(PCvM1_logit_only(curr_p, n, curr_a, curr_pho), error=function(e) NA)
       res_log_pcvm1 <- PCvM1_logit_only(curr_p, n_2, curr_a, curr_pho)
       t_log_pcvm1 <- as.numeric(difftime(Sys.time(), t0, units="secs"))
       pow_log_pcvm1 <- if(is.list(res_log_pcvm1[1])) res_log_pcvm1$martingale_cauchy1_power else NA
@@ -2009,8 +1985,6 @@ for (kk in seq_along(pho_vec)) {
 
       cat("[Logit] Running PCvM (Full) ... ")
       t0 <- Sys.time()
-      set.seed(curr_seed)
-      # res_log_pcvm <- tryCatch(Pcvm_logit_run(curr_p, n, curr_a, curr_pho), error=function(e) NA)
       res_log_pcvm <- Pcvm_logit_run(curr_p, n_2, curr_a, curr_pho)
       t_log_pcvm <- as.numeric(difftime(Sys.time(), t0, units="secs"))
       pow_log_pcvm <- if(is.list(res_log_pcvm[1])) res_log_pcvm$martingale_cauchy_power else NA
@@ -2019,8 +1993,6 @@ for (kk in seq_along(pho_vec)) {
       # --- Hybrid ---
       cat("[Logit] Running Hybrid ... ")
       t0 <- Sys.time()
-      set.seed(curr_seed)
-      # res_log_hyb <- tryCatch(Hybrid_logit_run(curr_p, n, curr_a, curr_pho), error=function(e) NA)
       res_log_hyb <- Hybrid_logit_run(curr_p, n_2, curr_a, curr_pho)
       t_log_hyb <- as.numeric(difftime(Sys.time(), t0, units="secs"))
       pow_log_hyb <- if(is.list(res_log_hyb[1])) res_log_hyb$hybrid_cauchy_power else NA
@@ -2028,8 +2000,6 @@ for (kk in seq_along(pho_vec)) {
 
       cat("[Logit] Running CPB(PLS) ... ")
       t0 <- Sys.time()
-      set.seed(curr_seed)
-      # res_log_pls <- tryCatch(PLS_logit_parallel_run(curr_p, n, curr_a, curr_pho), error=function(e) NA)
       res_log_pls <- PLS_logit_parallel_run(curr_p, n_2, curr_a, curr_pho)
       t_log_pls <- as.numeric(difftime(Sys.time(), t0, units="secs"))
       pow_log_pls <- if(is.list(res_log_pls[1])) res_log_pls$PLS_fisher_power else NA
@@ -2037,13 +2007,11 @@ for (kk in seq_along(pho_vec)) {
 
       cat("[Logit] Running GRPtest ... ")
       t0 <- Sys.time()
-      set.seed(curr_seed)
-      # res_log_grp <- tryCatch(grp_logit_parallel_run(curr_p, n, curr_a, curr_pho), error=function(e) NA)
       res_log_grp <- grp_logit_parallel_run(curr_p, n_2, curr_a, curr_pho)
       t_log_grp <- as.numeric(difftime(Sys.time(), t0, units="secs"))
       pow_log_grp <- if(is.list(res_log_grp[1])) res_log_grp$Power else NA
       cat(sprintf("Time: %.2f s | Power: %.3f\n", t_log_grp, pow_log_grp))
-      # 
+
       # ===================== Save results =====================
       row_res <- data.frame(
         p = curr_p, a = curr_a, pho = curr_pho,

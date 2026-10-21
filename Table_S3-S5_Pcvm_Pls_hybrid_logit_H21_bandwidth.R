@@ -31,7 +31,6 @@ Pcvm_Pls_hybrid_logit_h <- function(p,n,a,pho){
                           .packages = c('MASS','harmonicmeanp', 'glmnet','LassoSIR','VariableScreening','psych'),
                           .export = c("pvalue_integ_Brown",'bandwidth_choice')) %dopar%
     {
-      
       x <- mvrnorm(n, mu, sigma)
       z <- x %*% beta0 + a*0.2*(x %*% beta0)^2                                                # H21
       
@@ -561,11 +560,9 @@ grp_logit_parallel<- function(p,n,a,pho){
                        # .packages = c('MASS','matrixcalc','RPtests','GRPtests','foreach','parallel','iterators','doParallel','tictoc'),
                        .packages = c('MASS','matrixcalc','RPtests','GRPtests')) %dopar%
     {
-      
       x <- mvrnorm(n, mu, sigma)
       z <- x %*% beta0 + a*0.2*(x %*% beta0)^2                                             # H21
-      # z <- x %*% beta0 + a * (x[,1]*x[,2] + x[,2]*x[,3] + x[,3]*x[,4] + x[,4]*x[,5])   # H22
-      #      z <- x %*% beta0 + a * 2 * cos(0.6 * x %*% beta0 * pi)                                # H23
+      # z <- x %*% beta0 + a * (x[,1]*x[,2] + x[,2]*x[,3] + x[,3]*x[,4] + x[,4]*x[,5])     # H22 
       pr <- 1/(1 + exp(-z))
       y <- matrix(rbinom(n, 1, pr),ncol = 1)
       pval_grp <- GRPtest(x, y, fam = "binomial", nsplits = 1,RP_function = NULL,output_all=FALSE,penalize=TRUE)
@@ -593,7 +590,6 @@ if(T){
   pho <-  c(0, .4, .8)   
   r <- 16    
   compar_lm_result <- matrix(0, nrow = r * length(pho) * length(n) * length(a), ncol = length(p) + 4) 
-  
   for (kk in 1:length(pho)){
     for (ll in 1:length(n)){      
       for (ii in 1:length(a)){
@@ -624,11 +620,13 @@ if(T){
           compar_lm_result[base_row + 15*length(a), jj] <- result_grp_rp
           
           t4 <- Sys.time() 
-          cat("p = ", p[jj], ", n = ", n[ll], ", a = ", a[ii], ", pho = ", pho[kk],
-              "| PCvM_10 = ", result_pls$PCvM_10_power,
-              ", Hybrid_05 = ", result_pls$Hybrid_05_power,
-              ", Hybrid_10 = ", result_pls$Hybrid_10_power,
-              ", Hybrid_20 = ", result_pls$Hybrid_20_power,
+          cat("p = ", p[jj], ", n = ", n[ll], ", a = ", a[ii], ", pho = ", pho[kk], 
+              "| PCvM_05 (0.5*h_0) = ", result_pls$PCvM_05_power,
+              ", PCvM_10 (1*h_0)  = ", result_pls$PCvM_10_power,
+              ", PCvM_20 (2*h_0)  = ", result_pls$PCvM_20_power,
+              ", Hybrid_05 (0.5*h_0)  = ", result_pls$Hybrid_05_power,
+              ", Hybrid_10 (1*h_0)  = ", result_pls$Hybrid_10_power,
+              ", Hybrid_20 (2*h_0)  = ", result_pls$Hybrid_20_power,
               ", PLS = ", result_pls$PLS_power,
               ", GRP = ", result_grp_rp,
               " | time:", as.numeric(difftime(t4, t3, units="secs")), "s \n")

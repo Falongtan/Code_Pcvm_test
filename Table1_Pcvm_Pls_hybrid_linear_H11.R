@@ -30,7 +30,6 @@ Pcvm_Pls_hybrid_linear <- function(p,n,a,pho){
                                  .packages = c('MASS','glmnet','LassoSIR','VariableScreening','psych'),
                                  .export = c("pvalue_integ_Brown")) %dopar% 
     {
-        
         x <- mvrnorm(n, mu, sigma)
         y <-  x %*% beta0 + a * 0.1*(x %*% beta0)^2 + rnorm(n)                  # H11
         # y <- x %*% beta0 + a * cos(0.6 * pi * x %*% beta0) + rnorm(n)         # H12
@@ -450,7 +449,6 @@ grp_rp_lm_parallel <- function(p,n,a,pho){
                           # .packages = c('MASS','matrixcalc','RPtests','GRPtests','foreach','parallel','iterators','doParallel'),
                           .packages = c('MASS','matrixcalc','RPtests','GRPtests')) %dopar%  
     {
-      
       x <- mvrnorm(n, mu, sigma)
       y <-  x %*% beta0 + a * 0.1*(x %*% beta0)^2 + rnorm(n)                    # H11
       #y <- x %*% beta0 + a * cos(0.6 * pi * x %*% beta0) + rnorm(n)              # H12
@@ -508,7 +506,7 @@ if(T){
             ", hybrid_cauchy_power = ", result_pls$hybrid_cauchy_power,
             ", rp_power = ", result_grp_rp[1],
             ", grp_power = ",result_grp_rp[2],
-            ", time:",t4-t3, "\n")
+            ", time:",as.numeric(difftime(t4, t3, units="secs")), "s \n")
         compar_lm_result[r*length(a)*(kk-1) + ii, (length(p)+1):(length(p)+4)] <-
           compar_lm_result[r*length(a)*(kk-1) + ii + length(a), (length(p)+1):(length(p)+4)] <-
           compar_lm_result[r*length(a)*(kk-1) + ii + 2*length(a), (length(p)+1):(length(p)+4)] <-
