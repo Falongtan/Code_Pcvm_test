@@ -337,51 +337,7 @@ Pcvm_Pls_hybrid_linear_test <- function(x,y){
   pval_matrix_hybrid <- cbind(pval_matrix_Pcvm, pval_matrix_PLS)
   pval_num_h <- ncol(pval_matrix_hybrid)
   pval_cauchy_hybrid <- 1 - pcauchy(mean(tan((0.5-pval_matrix_hybrid[1:pval_num_h])*pi)))
-  
-  # ==============================================================
-  # Standalone PLS Test (Tan et al. 2025)
-  # ==============================================================
-  if(T){
-    #construct local smoothing test statistic based on x1 y1 and projections based on x2 y2
-    pro2_pls <- cbind(sdr_Upro2, sdr_ypro2)                                           # projections based on x2 y2
-    pro2_pls_num <- ncol(pro2_pls)                                                    # the number of projections
-    h1 <- n1^(-2/9)                                                                   # bandwidth 
-    
-    pval_matrix1_PLS_std <- matrix(nrow=1, ncol=pro2_pls_num) # p-value matrix
-    errormat1 <- U1%*%t(U1)  #residual matrix based on x1 y1
-    for(q in 1:pro2_pls_num){
-      x_pro1 <- x1%*%pro2_pls[,q]
-      x_pro1_mat <-((x_pro1)%*%matrix(1,1,n1)- matrix(1,n1,1)%*%(t(x_pro1)))/h1       # kernel function matrix
-      indictor1 <- ifelse(abs(x_pro1_mat) <= 1, 1, 0) 
-      kermat1 <- (3/4)*(1-x_pro1_mat^2)*indictor1                                     # Epanechnikov kernel 
-      #test statistics
-      Tn1 <- (sum(kermat1*errormat1)-tr(kermat1*errormat1))/sqrt(2*(sum((kermat1*errormat1)^2)-tr((kermat1*errormat1)^2)))
-      pval_matrix1_PLS_std[,q] <- 1-pnorm(Tn1)
-    }
-    
-    #construct test statistics based on x2 y2 and projections based on x1 y1
-    pro1_pls <- cbind(sdr_Upro1, sdr_ypro1)                                          # projections based on x1 y1
-    pro1_pls_num <- ncol(pro1_pls)                                                   # the number of projections
-    h2 <- n2^(-2/9)                                                                  # bandwidth 
-    
-    pval_matrix2_PLS_std <- matrix(nrow=1, ncol=pro1_pls_num) # p-value matrix
-    errormat2 <- U2%*%t(U2)                                                          #residual matrix based on x2 y2
-    for(l in 1:pro1_pls_num){
-      x_pro2 <- x2%*%pro1_pls[,l]
-      x_pro2_mat <-((x_pro2)%*%matrix(1,1,n2)- matrix(1,n2,1)%*%(t(x_pro2)))/h2      # kernel function matrix
-      indictor2 <- ifelse(abs(x_pro2_mat) <= 1, 1, 0) 
-      kermat2 <- (3/4)*(1-x_pro2_mat^2)*indictor2                                    # Epanechnikov kernel 
-      #test statistics
-      Tn2 <- (sum(kermat2*errormat2)-tr(kermat2*errormat2))/sqrt(2*(sum((kermat2*errormat2)^2)-tr((kermat2*errormat2)^2)))
-      pval_matrix2_PLS_std[,l] <- 1-pnorm(Tn2)
-    }
-    
-    pval_fisher1_PLS  <- 1- pchisq(-2*sum(log(pval_matrix1_PLS_std[1:pro2_pls_num])),df=2*pro2_pls_num)
-    pval_fisher2_PLS  <- 1- pchisq(-2*sum(log(pval_matrix2_PLS_std[1:pro1_pls_num])),df=2*pro1_pls_num)
-    pval_fisher_m <- cbind(pval_fisher1_PLS, pval_fisher2_PLS)
-    pval_fisher_cauchy_PLS <- 1- pcauchy(mean(tan((0.5-pval_fisher_m)*pi)))  
-  }
-  
+ 
   result <- list(pval_cauchy1_Pcvm = pval_cauchy1_Pcvm, 
                  pval_cauchy2_Pcvm = pval_cauchy2_Pcvm, 
                  pval_cauchy_Pcvm = pval_cauchy_Pcvm, 
@@ -809,53 +765,7 @@ Pcvm_Pls_hybrid_logit_test <- function(x,y){
   pval_matrix_hybrid <- cbind(pval_matrix_PCvm, pval_matrix_PLS)
   pval_num_h <- ncol(pval_matrix_hybrid)
   pval_cauchy_hybrid <- 1 - pcauchy(mean(tan((0.5-pval_matrix_hybrid[1:pval_num_h])*pi)))
-  
-  # ==============================================================
-  # Standalone PLS Test (Tan et al. 2025)
-  # ==============================================================
-  if(T){
-    #construct PLS test statistic based on x1 y1 and projections based on x2 y2
-    pro2_pls <- cbind(sir_Upro2, sir_ypro2)                                                       # projections based on x2 y2
-    pro2_num_pls_std <- ncol(pro2_pls)                                                                # the number of projections
-    h1 <- n1^(-2/9)                                                                               # bandwidth
-    
-    pval_matrix1_PLS_std <- matrix(nrow=1, ncol=pro2_num_pls_std) # p-value matrix
-    errormat1 <- U1%*%t(U1)                                                                       # residual matrix based on x1 y1
-    for(q in 1:pro2_num_pls_std){
-      x_pro1 <- x1%*%pro2_pls[,q]
-      x_pro1_mat <-((x_pro1)%*%matrix(1,1,n1)- matrix(1,n1,1)%*%(t(x_pro1)))/h1            # kernel function matrix
-      #kermat1 <-(1/sqrt(2*pi))*exp(-(x_pro1_mat^2)/2)                                     # Gaussian kernel
-      indictor1 <- ifelse(abs(x_pro1_mat) <= 1, 1, 0)
-      kermat1 <- (3/4)*(1-x_pro1_mat^2)*indictor1                                          # Epanechnikov kernel
-      #PLS test statistics
-      Tn1 <- (sum(kermat1*errormat1)-tr(kermat1*errormat1))/sqrt(2*(sum((kermat1*errormat1)^2)-tr((kermat1*errormat1)^2)))
-      pval_matrix1_PLS_std[,q] <- 1-pnorm(Tn1)
-    }
-    
-    #construct PLS test statistics based on x2 y2 and projections based on x1 y1
-    pro1_pls <- cbind(sir_Upro1, sir_ypro1)                                                       # projections based on x1 y1
-    pro1_num_pls_std <- ncol(pro1_pls)                                                                # the number of projections
-    h2 <- n2^(-2/9)                                                                               # bandwidth
-    
-    pval_matrix2_PLS_std <- matrix(nrow=1, ncol=pro1_num_pls_std) # p-value matrix
-    errormat2 <- U2%*%t(U2)                                                                       #residual matrix based on x2 y2
-    for(l in 1:pro1_num_pls_std){
-      x_pro2 <- x2%*%pro1_pls[,l]
-      x_pro2_mat <-((x_pro2)%*%matrix(1,1,n2)- matrix(1,n2,1)%*%(t(x_pro2)))/h2        # kernel function matrix
-      #kermat2 <-(1/sqrt(2*pi))*exp(-(x_pro2_mat^2)/2)                                 # Gaussian kernel
-      indictor2 <- ifelse(abs(x_pro2_mat) <= 1, 1, 0)
-      kermat2 <- (3/4)*(1-x_pro2_mat^2)*indictor2                                      # Epanechnikov kernel
-      # PLS test statistics
-      Tn2 <- (sum(kermat2*errormat2)-tr(kermat2*errormat2))/sqrt(2*(sum((kermat2*errormat2)^2)-tr((kermat2*errormat2)^2)))
-      pval_matrix2_PLS_std[,l] <- 1-pnorm(Tn2)
-    }
-    
-    pval_fisher1_PLS_std <- 1- pchisq(-2*sum(log(pval_matrix1_PLS_std[1:pro2_num_pls_std])),df=2*pro2_num_pls_std)
-    pval_fisher2_PLS_std <- 1- pchisq(-2*sum(log(pval_matrix2_PLS_std[1:pro1_num_pls_std])),df=2*pro1_num_pls_std)
-    pval_fisher_m_std <- cbind(pval_fisher1_PLS_std, pval_fisher2_PLS_std)
-    pval_fisher_cauchy_std <- 1- pcauchy(mean(tan((0.5-pval_fisher_m_std)*pi)))
-  }
-  
+ 
   result <- list(pval_cauchy1_PCvm = pval_cauchy1_PCvm, 
                  pval_cauchy2_PCvm = pval_cauchy2_PCvm, 
                  pval_cauchy_PCvm = pval_cauchy_PCvm, 
