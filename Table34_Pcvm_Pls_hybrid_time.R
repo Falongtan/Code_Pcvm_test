@@ -1916,9 +1916,7 @@ p_vec <- c(50, 100, 300, 600, 900, 1200)
 a_vec <- c(0, 1)                            
 pho_vec <- c(0)                          
 benchmark_results <- data.frame()
-
 closeAllConnections()  
-
 for (kk in seq_along(pho_vec)) {
   for (ii in seq_along(a_vec)) {
     for (jj in seq_along(p_vec)) {

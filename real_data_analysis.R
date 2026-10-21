@@ -48,7 +48,7 @@ Pcvm_Pls_hybrid_linear_test <- function(x,y){
       library(caret)
       lasso_beta1 <- coef(lasso_model1, s = "lambda.min")[-1]
       cor_matrix <- cor(x1_sec, use = "pairwise.complete.obs")
-      high_cor_vars <- findCorrelation(cor_matrix, cutoff = 0.9, verbose = TRUE)
+      high_cor_vars <- findCorrelation(cor_matrix, cutoff = 0.9, verbose = FALSE)
       if(length(high_cor_vars) > 0){
         index_beta1_non0 <- index_beta1_non0[-high_cor_vars]
         x1_sec <- x1[,index_beta1_non0, drop=FALSE ]  
@@ -124,7 +124,7 @@ Pcvm_Pls_hybrid_linear_test <- function(x,y){
       library(caret)
       lasso_beta2 <- coef(lasso_model2, s = "lambda.min")[-1]
       cor_matrix <- cor(x2_sec, use = "pairwise.complete.obs")
-      high_cor_vars <- findCorrelation(cor_matrix, cutoff = 0.9, verbose = TRUE)
+      high_cor_vars <- findCorrelation(cor_matrix, cutoff = 0.9, verbose = FALSE)
       if(length(high_cor_vars) > 0){
         index_beta2_non0 <- index_beta2_non0[-high_cor_vars]
         x2_sec <- x2[,index_beta2_non0, drop=FALSE ]  
@@ -384,13 +384,7 @@ Pcvm_Pls_hybrid_linear_test <- function(x,y){
   
   result <- list(pval_cauchy1_Pcvm = pval_cauchy1_Pcvm, 
                  pval_cauchy2_Pcvm = pval_cauchy2_Pcvm, 
-                 pval_cauchy_Pcvm = pval_cauchy_Pcvm,
-                 pval_cauchy1_PLS = pval_cauchy1_PLS, 
-                 pval_cauchy2_PLS = pval_cauchy2_PLS, 
-                 pval_cauchy_PLS = pval_cauchy_PLS, 
-                 pval_fisher1_PLS = pval_fisher1_PLS, 
-                 pval_fisher2_PLS = pval_fisher2_PLS, 
-                 pval_fisher_cauchy_PLS = pval_fisher_cauchy_PLS,
+                 pval_cauchy_Pcvm = pval_cauchy_Pcvm, 
                  pval_cauchy_hybrid = pval_cauchy_hybrid) 
   
   return(result) 
@@ -864,13 +858,7 @@ Pcvm_Pls_hybrid_logit_test <- function(x,y){
   
   result <- list(pval_cauchy1_PCvm = pval_cauchy1_PCvm, 
                  pval_cauchy2_PCvm = pval_cauchy2_PCvm, 
-                 pval_cauchy_PCvm = pval_cauchy_PCvm,
-                 pval_cauchy1_PLS = pval_cauchy1_PLS,
-                 pval_cauchy2_PLS = pval_cauchy2_PLS,
-                 pval_cauchy_PLS = pval_cauchy_PLS, 
-                 pval_fisher1_PLS = pval_fisher1_PLS_std,
-                 pval_fisher2_PLS = pval_fisher2_PLS_std,
-                 pval_fisher_cauchy_PLS = pval_fisher_cauchy_std,
+                 pval_cauchy_PCvm = pval_cauchy_PCvm, 
                  pval_cauchy_hybrid = pval_cauchy_hybrid)
   
   return(result)
@@ -905,7 +893,7 @@ cv_compare_models <- function(x, y, model_type = c("linear", "logistic"),
   if(convert_sparse && !inherits(x, "dgCMatrix")) x <- as(x, "dgCMatrix")
   
   for (r in 1:nrep) {
-    print(r)
+    # print(r)
     # set.seed(r)
     folds <- createFolds(y, k = nfolds, list = TRUE, returnTrain = TRUE)
     
@@ -954,7 +942,7 @@ cv_compare_models <- function(x, y, model_type = c("linear", "logistic"),
                             error=function(e) NULL)
           if(!is.null(model)){
             prob <- as.numeric(1 / (1 + exp(-(cbind(1, as.matrix(x_test)) %*% model$coefficients))))
-            auc <- tryCatch(auc(y_test, prob), error=function(e) NA)
+            auc <- tryCatch(auc(y_test, prob, quiet = TRUE), error=function(e) NA)
             pred <- ifelse(prob>0.5,1,0)
             acc <- mean(pred==y_test)
             fold_glm[k, ] <- c(auc, acc)
@@ -966,7 +954,7 @@ cv_compare_models <- function(x, y, model_type = c("linear", "logistic"),
         # cvfit <- cv.glmnet(x_train_sparse, y_train, alpha=1, nfolds=5, family="binomial")
         cvfit <- cv.glmnet(as.matrix(x_train), y_train, alpha=1, nfolds=5, family="binomial")
         prob <- as.numeric(predict(cvfit, newx=as.matrix(x_test), s="lambda.min", type="response"))
-        auc <- tryCatch(auc(y_test, prob), error=function(e) NA)
+        auc <- tryCatch(auc(y_test, prob, quiet = TRUE), error=function(e) NA)
         pred <- ifelse(prob>0.5,1,0)
         acc <- mean(pred==y_test) 
         fold_glmnet[k, ] <- c(auc, acc)
@@ -998,15 +986,22 @@ data_crime <- data_crime[,!is.na(apply(data_crime,2,sum))]
 dim(data_crime)
 sum(is.na(data_crime))
  
-table(y)
 y <- data_crime[,100]
 x <- data_crime[,-100] 
- 
+table(y)
+
 set.seed(123)
+t3 <- Sys.time()
 result_81 <- Pcvm_Pls_hybrid_linear_test(x,y) 
-result_81 
- 
-if(F){
+t4 <- Sys.time()
+cat("Dataset: Communities & Crime (Linear) | n = ", nrow(x), ", p = ", ncol(x), "\n",
+    "cauchy1_pcvm = ", result_81$pval_cauchy1_Pcvm, 
+    ", cauchy_pcvm = ", result_81$pval_cauchy_Pcvm, 
+    ", cauchy_hybrid = ", result_81$pval_cauchy_hybrid,
+    " | time:", as.numeric(difftime(t4, t3, units="secs")), "s \n\n") 
+
+# Quadratic polynomial model
+if(T){
   # A model with added interaction items
   p <- ncol(x)
   y_scaled<- scale(y)
@@ -1036,8 +1031,14 @@ if(F){
   dim(x2_scaled) # 1994 1584
   
   set.seed(123)
+  t3 <- Sys.time()
   result8_2 <- Pcvm_Pls_hybrid_linear_test(x2_scaled,y)
-  result8_2 
+  t4 <- Sys.time()
+  cat("Dataset: Communities & Crime (Quadratic polynomial model) | n = ", nrow(x2_scaled), ", p = ", ncol(x2_scaled), "\n",
+      "cauchy1_pcvm = ", result8_2$pval_cauchy1_Pcvm,
+      ", cauchy_pcvm = ", result8_2$pval_cauchy_Pcvm,
+      ", cauchy_hybrid = ", result8_2$pval_cauchy_hybrid,
+      " | time:", as.numeric(difftime(t4, t3, units="secs")), "s \n\n")
  
   if(F){
     res1_scaled <- cv_compare_models(x, y, model_type = "linear", nrep = 20) 
@@ -1048,90 +1049,75 @@ if(F){
   }
   
   # draw
-  if(F){
-    if(F){
-      xy <- cbind(result1$y1,result1$x1_bata,result1$U1,result1$pred1)
-      xy_scaled <- cbind(result11$y1,result11$x1_bata,result11$U1,result11$pred1)
-      xy_1 <- cbind(result1_1$y1,result1_1$x1_bata,result1_1$U1,result1_1$pred1)
-      xy_1_scaled <- cbind(result1_11$y1,result1_11$x1_bata,result1_11$U1,result1_11$pred1)
-      
-      xy <- as.data.frame(xy)
-      xy_scaled <- as.data.frame(xy_scaled)
-      xy_1 <- as.data.frame(xy_1)
-      xy_1_scaled <- as.data.frame(xy_1_scaled)
-      colnames(xy) <- 
-        colnames(xy_scaled) <- 
-        colnames(xy_1) <- 
-        colnames(xy_1_scaled) <- c("y", "X_beta", "U", "pred")
-      xy$case <- "xy"
-      xy_scaled$case <- "xy_scaled"
-      xy_1$case <- "xy_1"
-      xy_1_scaled$case <- "xy_1_scaled"
-      
-      library(dplyr)
-      all_data <- bind_rows(xy, xy_scaled, xy_1, xy_1_scaled)
-      
-      df1 <- all_data %>% 
-        mutate(plot_type = "X_beta vs y") %>%
-        select(case, plot_type, x = X_beta, y = y)
-      
-      df2 <- all_data %>% 
-        mutate(plot_type = "pred vs U") %>%
-        select(case, plot_type, x = pred, y = U)
-      
-      plot_data <- bind_rows(df1, df2)
-      plot_data$plot_type <- factor(plot_data$plot_type,
-                                    levels = c("X_beta vs y", "pred vs U"))
-      
-      # Drawing: 4*2 layout
-      ggplot(plot_data, aes(x = x, y = y)) +
-        geom_point(alpha = 0.6) +
-        facet_grid(case ~ plot_type, scales = "free") +
-        theme_bw() +
-        labs(x = "", y = "")
-    } 
+  cat("\n=== The scatter plot ===\n")  
+  if(T){
+    library(ggplot2)
+    X <- x
+    Y <- y
+    p <- ncol(X)
+    set.seed(123)
+    lasso_model <- cv.glmnet(as.matrix(X), Y, family="gaussian")
+    beta_lasso <- coef(lasso_model, s = "lambda.min")[-1]
+    index_beta_non0 <- seq(1:p)[as.numeric(beta_lasso) != 0]
+    x_sec <- X[,index_beta_non0, drop=FALSE]                                        
+    sec_model = glm(Y~x_sec-1,family = gaussian)                           
     
-    if(F){
-      library(ggplot2)
-      df <- data.frame( xbeta = xbeta, Y = Y )
-      ggplot(df, aes(x = xbeta, y = Y)) +
-        geom_point(shape = 21, fill = "black", color = "black", size = 0.2, stroke = 0.5) + 
-        labs(
-          x = expression( hat(beta)^T * X),
-          y = expression("Y")
-        ) + 
-        theme_classic(base_size = 16) + 
-        theme(
-          axis.title = element_text(size = 14, face = "bold"),
-          axis.text = element_text(size = 12, color = "black"),
-          axis.ticks = element_line(color = "black", size = 0.6),
-          axis.line = element_line(color = "black", size = 0.6),
-          panel.border = element_rect(color = "black", fill = NA, size = 0.8), 
-          plot.margin = margin(10, 10, 10, 10)
-        ) + 
-        coord_cartesian(xlim = c(-0.01,1.01),  ylim = c(-0.01, 1.01))  # 6*4.5
+    pred = predict(sec_model, newx = x_sec, type="response")
+    U <- Y-pred  
+    xbeta <- x_sec%*%sec_model$coefficients   
 
-     
-      # residual plot 
-      df <- data.frame(U = U, pred = pred) 
-      ggplot(df, aes(x =pred , y = U)) +
-        geom_point(shape = 21, fill = "black", color = "black", size = 0.2, stroke = 0.5) +  
-        labs(x = expression(hat(Y)), 
-             y = expression("Residuals")) + 
-        theme_classic(base_size = 16) +   
-        theme(
-          axis.title = element_text(size = 14, face = "bold"),
-          axis.text = element_text(size = 12, color = "black"),
-          axis.ticks = element_line(color = "black", size = 0.6),
-          axis.line = element_line(color = "black", size = 0.6),
-          panel.border = element_rect(color = "black", fill = NA, size = 0.8),  
-          plot.margin = margin(10, 10, 10, 10)
-        )+  coord_cartesian(xlim = c(-0.02,1.01),  ylim = c(-0.6, 0.8))
- 
-    }
+    #  scatter plot
+    df1 <- data.frame( xbeta = xbeta, Y = Y )
+    p1 <- ggplot(df1, aes(x = xbeta, y = Y)) +
+      geom_point(shape = 21, fill = "black", color = "black", size = 0.2, stroke = 0.5) + 
+      labs(
+        x = expression( hat(beta)^T * X),
+        y = expression("Y")
+      ) + 
+      theme_classic(base_size = 16) + 
+      theme(
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12, color = "black"),
+        axis.ticks = element_line(color = "black", size = 0.6),
+        axis.line = element_line(color = "black", size = 0.6),
+        panel.border = element_rect(color = "black", fill = NA, size = 0.8), 
+        plot.margin = margin(10, 10, 10, 10)
+      ) +  coord_cartesian(xlim = c(-0.01,1.01),  ylim = c(-0.01, 1.01))  # 6*4.5
+    print(p1)
+    ggsave("Figure_1_scatter.pdf", plot = p1, width = 6, height = 4.5, units = "in")
+    
+    # residual plot  
+    set.seed(123)
+    lasso_model_quad <- cv.glmnet(as.matrix(x2_scaled), Y, family="gaussian")
+    beta_lasso_quad <- coef(lasso_model_quad, s = "lambda.min")[-1]
+    index_beta_non0_quad <- seq(1:ncol(x2_scaled))[as.numeric(beta_lasso_quad) != 0]
+    
+    x_sec_quad <- x2_scaled[, index_beta_non0_quad, drop=FALSE]                                        
+    sec_model_quad = glm(Y~x_sec_quad-1, family = gaussian)                           
+    
+    pred_quad = predict(sec_model_quad, newx = x_sec_quad, type="response")
+    U_quad <- Y - pred_quad  
+    
+    df2 <- data.frame(U = U_quad, pred = pred_quad) 
+    p2 <- ggplot(df2, aes(x = pred , y = U)) +
+      geom_point(shape = 21, fill = "black", color = "black", size = 0.2, stroke = 0.5) +  
+      labs(x = expression(hat(Y)), 
+           y = expression("Residuals")) + 
+      theme_classic(base_size = 16) +   
+      theme(
+        axis.title = element_text(size = 14, face = "bold"),
+        axis.text = element_text(size = 12, color = "black"),
+        axis.ticks = element_line(color = "black", size = 0.6),
+        axis.line = element_line(color = "black", size = 0.6),
+        panel.border = element_rect(color = "black", fill = NA, size = 0.8),  
+        plot.margin = margin(10, 10, 10, 10)
+      ) +  coord_cartesian(xlim = c(-0.02,1.01),  ylim = c(-0.6, 0.8))
+    print(p2)
+    ggsave("Figure_2_residual.pdf", plot = p2, width = 6, height = 4.5, units = "in")
   }
+  cat("\n=== Plots generated and saved successfully!! ===\n")  
   
-} # interaction items
+}  
  
 ####################################################################################################
 ##################### logit: Acute myeloid leukemia (OHSU, 2022) ####################################
@@ -1148,16 +1134,29 @@ x <- x[,-which(is.na(apply(data_AML,2,sum)))]
 # x <- apply(x,2,as.numeric)
 sum(is.na(x))   
 
-x_matrix <- as.matrix(x)
-res <- cv_compare_models(x_matrix, y, model_type = "logistic", nrep = 1) 
+# x_matrix <- as.matrix(x)
+# res <- cv_compare_models(x_matrix, y, model_type = "logistic", nrep = 1) 
 
 set.seed(123)
+t3 <- Sys.time()
 result_8 <- Pcvm_Pls_hybrid_logit_test(x ,y)
-result_8
-
+t4 <- Sys.time()
+cat("Dataset: OHSU AML 2022 (Logistic) | n = ", nrow(x), ", p = ", ncol(x), "\n",
+    "cauchy1_pcvm = ", result_8$pval_cauchy1_PCvm, 
+    ", cauchy_pcvm = ", result_8$pval_cauchy_PCvm, 
+    ", cauchy_hybrid = ", result_8$pval_cauchy_hybrid,
+    " | time:", as.numeric(difftime(t4, t3, units="secs")), "s \n\n") 
+ 
 set.seed(123)
+t3 <- Sys.time()
 result_83 <- cv_compare_models(as.matrix(x), y, model_type = "logistic", nfolds = 5, nrep = 20 ) 
-result_83
+t4 <- Sys.time()
+cat("Dataset: OHSU AML 2022 (Logistic CV Performance) | n = ", nrow(x), ", p = ", ncol(x), "\n",
+    "glmnet_AUC_mean = ", result_83$glmnet_mean["AUC"],
+    ", glmnet_ACC_mean = ", result_83$glmnet_mean["Accuracy"],
+    ", glmnet_AUC_sd = ", result_83$glmnet_sd["AUC"],
+    ", glmnet_ACC_sd = ", result_83$glmnet_sd["Accuracy"],
+    " | time:", as.numeric(difftime(t4, t3, units="secs")), "s \n\n")
 
 # save.image(file = "aml_ohsu_2022/r_data.RData")
 # load("aml_ohsu_2022/r_data.RData")

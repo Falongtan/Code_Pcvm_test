@@ -456,53 +456,10 @@ Pcvm_Pls_hybrid_logit_h <- function(p,n,a,pho){
       pval_matrix_hybrid_20 <- cbind(pval_matrix_PCvm_20, pval_matrix_PLS)
       pval_cauchy_hybrid_20 <- 1 - pcauchy(mean(tan((0.5-pval_matrix_hybrid_20[1:ncol(pval_matrix_hybrid_20)])*pi)))
       
-      # =========================================================================
-      # 3. Standalone PLS Test (Fixed default bandwidth)
-      # =========================================================================
-      if(T){
-        pro2_pls <- cbind(sir_Upro2, sir_ypro2)                                                               
-        pro2_num_pls <- ncol(pro2_pls)                                                                        
-        h1 <- n1^(-2/9)                                                                                       
-        
-        pval_matrix1_PLS_std <- matrix(nrow=1, ncol=pro2_num_pls) 
-        errormat1 <- U1%*%t(U1)                                                                               
-        for(q in 1:pro2_num_pls){
-          x_pro1 <- x1%*%pro2_pls[,q]
-          x_pro1_mat <-((x_pro1)%*%matrix(1,1,n1)- matrix(1,n1,1)%*%(t(x_pro1)))/h1            
-          indictor1 <- ifelse(abs(x_pro1_mat) <= 1, 1, 0)
-          kermat1 <- (3/4)*(1-x_pro1_mat^2)*indictor1                                          
-          Tn1 <- (sum(kermat1*errormat1)-tr(kermat1*errormat1))/sqrt(2*(sum((kermat1*errormat1)^2)-tr((kermat1*errormat1)^2)))
-          pval1 <- 1-pnorm(Tn1)
-          pval_matrix1_PLS_std[,q] <- pval1
-        }
-        
-        pro1_pls <- cbind(sir_Upro1, sir_ypro1)                                                               
-        pro1_num_pls <- ncol(pro1_pls)                                                                        
-        h2 <- n2^(-2/9)                                                                                       
-        
-        pval_matrix2_PLS_std <- matrix(nrow=1, ncol=pro1_num_pls) 
-        errormat2 <- U2%*%t(U2)                                                                               
-        for(l in 1:pro1_num_pls){
-          x_pro2 <- x2%*%pro1_pls[,l]
-          x_pro2_mat <-((x_pro2)%*%matrix(1,1,n2)- matrix(1,n2,1)%*%(t(x_pro2)))/h2        
-          indictor2 <- ifelse(abs(x_pro2_mat) <= 1, 1, 0)
-          kermat2 <- (3/4)*(1-x_pro2_mat^2)*indictor2                                      
-          Tn2 <- (sum(kermat2*errormat2)-tr(kermat2*errormat2))/sqrt(2*(sum((kermat2*errormat2)^2)-tr((kermat2*errormat2)^2)))
-          pval2 <- 1-pnorm(Tn2)
-          pval_matrix2_PLS_std[,l] <- pval2
-        }
-        
-        pval_fisher1_PLS <- 1- pchisq(-2*sum(log(pval_matrix1_PLS_std[1:pro2_num_pls])),df=2*pro2_num_pls)
-        pval_fisher2_PLS <- 1- pchisq(-2*sum(log(pval_matrix2_PLS_std[1:pro1_num_pls])),df=2*pro1_num_pls)
-        pval_fisher_m <- cbind(pval_fisher1_PLS, pval_fisher2_PLS)
-        pval_fisher_cauchy <- 1- pcauchy(mean(tan((0.5-pval_fisher_m)*pi)))
-      }
-      
       c(
         pval_cauchy1_PCvm_05, pval_cauchy2_PCvm_05, pval_cauchy_PCvm_05, pval_cauchy_hybrid_05, 
         pval_cauchy1_PCvm_10, pval_cauchy2_PCvm_10, pval_cauchy_PCvm_10, pval_cauchy_hybrid_10,  
-        pval_cauchy1_PCvm_20, pval_cauchy2_PCvm_20, pval_cauchy_PCvm_20, pval_cauchy_hybrid_20,  
-        pval_fisher1_PLS, pval_fisher2_PLS, pval_fisher_cauchy  
+        pval_cauchy1_PCvm_20, pval_cauchy2_PCvm_20, pval_cauchy_PCvm_20, pval_cauchy_hybrid_20
       )
     }
   stopImplicitCluster()
@@ -523,61 +480,10 @@ Pcvm_Pls_hybrid_logit_h <- function(p,n,a,pho){
     PCvM1_20_power = mean(hybrid_power[,9] <= 0.05, na.rm=TRUE),
     PCvM2_20_power = mean(hybrid_power[,10] <= 0.05, na.rm=TRUE),
     PCvM_20_power  = mean(hybrid_power[,11] <= 0.05, na.rm=TRUE),
-    Hybrid_20_power= mean(hybrid_power[,12] <= 0.05, na.rm=TRUE),
-    
-    PLS1_power     = mean(hybrid_power[,13] <= 0.05, na.rm=TRUE),
-    PLS2_power     = mean(hybrid_power[,14] <= 0.05, na.rm=TRUE),
-    PLS_power      = mean(hybrid_power[,15] <= 0.05, na.rm=TRUE)
+    Hybrid_20_power= mean(hybrid_power[,12] <= 0.05, na.rm=TRUE)
   ))
 }
-
-# grp tests for testing logistic regression models
-grp_logit_parallel<- function(p,n,a,pho){
-  library(MASS)
-  library(matrixcalc)
-  library(RPtests)
-  library(GRPtests)
-  #library(tictoc)
-  library(foreach)
-  library(parallel)
-  library(iterators)
-  library(doParallel)
-  s <- 1000
-  mu <- rep(0, p)
-  if(pho == 0){
-    sigma <- diag(rep(1,p))
-  }else{
-    v <- pho^(0:(p-1))
-    sigma <- toeplitz(v)
-  }
-  beta0 <- c(rep(1,5),rep(0,p-5))
-  #parallel
-  # tic()
-  cores <- detectCores(logical=F)-2
-  cl <- makeCluster(cores)
-  registerDoParallel(cl, cores=cores)
-  grp_power <- foreach(k = 1:s, .combine='rbind',
-                       # .packages = c('MASS','matrixcalc','RPtests','GRPtests','foreach','parallel','iterators','doParallel','tictoc'),
-                       .packages = c('MASS','matrixcalc','RPtests','GRPtests')) %dopar%
-    {
-      x <- mvrnorm(n, mu, sigma)
-      z <- x %*% beta0 + a*0.2*(x %*% beta0)^2                                             # H21
-      # z <- x %*% beta0 + a * (x[,1]*x[,2] + x[,2]*x[,3] + x[,3]*x[,4] + x[,4]*x[,5])     # H22 
-      pr <- 1/(1 + exp(-z))
-      y <- matrix(rbinom(n, 1, pr),ncol = 1)
-      pval_grp <- GRPtest(x, y, fam = "binomial", nsplits = 1,RP_function = NULL,output_all=FALSE,penalize=TRUE)
-      result <- c(pval_grp)
-    }
-  #end parallel
-  stopImplicitCluster()
-  stopCluster(cl)
-  
-  # toc()
-  #power
-  grp_power <- mean(grp_power<=0.05,na.rm=TRUE)
-  return(grp_power)
-}
-
+ 
 source("utils.R") # bandwidth_choice  pvalue_integ_Brown
  
 # Bandwidth sensitivity analysis
@@ -588,15 +494,14 @@ if(T){
   p <-  c(50,100,300,600,900,1200)    
   c_h <- 1                     
   pho <-  c(0, .4, .8)   
-  r <- 16    
+  r <- 12    
   compar_lm_result <- matrix(0, nrow = r * length(pho) * length(n) * length(a), ncol = length(p) + 4) 
   for (kk in 1:length(pho)){
     for (ll in 1:length(n)){      
       for (ii in 1:length(a)){
         for (jj in 1:length(p)){
           t3 <- Sys.time()  
-          result_pls <- Pcvm_Pls_hybrid_logit_h(p[jj], n[ll], a[ii], pho[kk])    
-          result_grp_rp <- grp_logit_parallel(p[jj], n[ll], a[ii], pho[kk])   
+          result_pls <- Pcvm_Pls_hybrid_logit_h(p[jj], n[ll], a[ii], pho[kk])     
           base_row <- r * length(a) * length(n) * (kk - 1) + r * length(a) * (ll - 1) + ii 
           # 0.5*h
           compar_lm_result[base_row + 0*length(a), jj] <- result_pls$PCvM1_05_power
@@ -612,23 +517,19 @@ if(T){
           compar_lm_result[base_row + 8*length(a), jj] <- result_pls$PCvM1_20_power
           compar_lm_result[base_row + 9*length(a), jj] <- result_pls$PCvM2_20_power
           compar_lm_result[base_row + 10*length(a), jj] <- result_pls$PCvM_20_power
-          compar_lm_result[base_row + 11*length(a), jj] <- result_pls$Hybrid_20_power
-          
-          compar_lm_result[base_row + 12*length(a), jj] <- result_pls$PLS1_power
-          compar_lm_result[base_row + 13*length(a), jj] <- result_pls$PLS2_power
-          compar_lm_result[base_row + 14*length(a), jj] <- result_pls$PLS_power
-          compar_lm_result[base_row + 15*length(a), jj] <- result_grp_rp
+          compar_lm_result[base_row + 11*length(a), jj] <- result_pls$Hybrid_20_power 
           
           t4 <- Sys.time() 
           cat("p = ", p[jj], ", n = ", n[ll], ", a = ", a[ii], ", pho = ", pho[kk], 
-              "| PCvM_05 (0.5*h_0) = ", result_pls$PCvM_05_power,
-              ", PCvM_10 (1*h_0)  = ", result_pls$PCvM_10_power,
-              ", PCvM_20 (2*h_0)  = ", result_pls$PCvM_20_power,
-              ", Hybrid_05 (0.5*h_0)  = ", result_pls$Hybrid_05_power,
-              ", Hybrid_10 (1*h_0)  = ", result_pls$Hybrid_10_power,
-              ", Hybrid_20 (2*h_0)  = ", result_pls$Hybrid_20_power,
-              ", PLS = ", result_pls$PLS_power,
-              ", GRP = ", result_grp_rp,
+              "| PCvM1_power (0.5*h_0) = ", result_pls$PCvM1_05_power,
+              ", PCvM1_power (1*h_0)  = ", result_pls$PCvM1_10_power,
+              ", PCvM1_power (2*h_0)  = ", result_pls$PCvM1_20_power,
+              ", PCvM_power (0.5*h_0) = ", result_pls$PCvM_05_power,
+              ", PCvM_power (1*h_0)  = ", result_pls$PCvM_10_power,
+              ", PCvM_power (2*h_0)  = ", result_pls$PCvM_20_power,
+              ", Hybrid_power (0.5*h_0)  = ", result_pls$Hybrid_05_power,
+              ", Hybrid_power (1*h_0)  = ", result_pls$Hybrid_10_power,
+              ", Hybrid_power (2*h_0)  = ", result_pls$Hybrid_20_power, 
               " | time:", as.numeric(difftime(t4, t3, units="secs")), "s \n")
           
           for(step in 0:(r-1)){
