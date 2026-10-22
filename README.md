@@ -15,3 +15,5 @@ This repository contains the R source code to reproduce the Monte Carlo simulati
 | `Table34_Pcvm_Pls_hybrid_time.R` | Computational runtime comparing our methods against competing resampling/projection tests. | [Table 3, Table 4] |
 | `real_data_analysis.R` | Real data applications on the Communities and Crime dataset (linear) and OHSU AML dataset (logistic). The corresponding datasets are provided in the `communities+and+crime/` and `aml_ohsu_2022/` directories, respectively. | [Figure 1, Figure 2] |
 | `utils.R` | Shared utility functions across all simulations, including the empirical Brownian motion integral calculation (`pvalue_integ_Brown`) and GCV bandwidth selection (`bandwidth_choice`). | [ ] |
+
+**Note:** Random seeds are not fixed for the simulation studies. The results may vary slightly across runs but are generally consistent with those reported in the paper. Random seeds are fixed for the real-data analysis to ensure reproducibility.
